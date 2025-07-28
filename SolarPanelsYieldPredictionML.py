@@ -209,12 +209,12 @@ print("\n \n")
 print(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap)
 
 for i in range(len(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap["SOLAR_PANEL_INVERTER_ID"])): #We are going to make duplicates unique since we need to preserve dimensions for when we add these modified columns to our merged table 
-    if (dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc([i]) == 0): #We do this by assigning duplicate values to their row's index value 
-        dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.loc([i, "SOLAR_PANEL_INVERTER_ID"]) = i
+    if (dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[[i]] == 0): #We do this by assigning duplicate values to their row's index value 
+        dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.loc[i, "SOLAR_PANEL_INVERTER_ID"] = i
 
 for i in range(len(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"])): #We are going to make duplicates unique since we need to preserve dimensions for when we add these modified columns to our merged table 
-    if (dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc([i]) == 0): #We do this by assigning duplicate values to their row's index value 
-        dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.loc([i, "TOTAL_YIELD"]) = i
+    if (dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[[i]] == 0): #We do this by assigning duplicate values to their row's index value 
+        dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.loc[i, "TOTAL_YIELD"] = i
 
 dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.reindex(index=list(chain.from_iterable([[i for i in range(3181, 71959)] + [j for j in range(0, 3180)]])))
 
