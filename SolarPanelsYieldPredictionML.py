@@ -232,8 +232,8 @@ for i in range(1382):
 #for i in range(len(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"])):
     #if(i > 3182):
         #dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.loc[i, "TOTAL_YIELD"] = dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"].mean()
-dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.fillna(0)
-dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.fiillna(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"].mean())
+dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap = dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.fillna(0)
+dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap = dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.fillna(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"].mean())
 print(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap)
 print("\n \n")
 print(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap)
@@ -252,7 +252,11 @@ print("\n \n")
 print(maxScaled.info())
 
 maxScaled.drop(maxScaled.tail(65595).index, inplace=True)
-
+maxScaled["DATE_TIME"] = maxScaled["DATE_TIME"].fillna(0)
+maxScaled["PLANT_ID"] = maxScaled["PLANT_ID"].fillna(0)
+maxScaled["SENSOR_INVERTER_ID"] = maxScaled["SENSOR_INVERTER_ID"].fillna(0)
+maxScaled["AMBIENT_TEMPERATURE"] = maxScaled["AMBIENT_TEMPERATURE"].fillna(maxScaled["AMBIENT_TEMPERATURE"].mean())
+maxScaled["MODULE_TEMPERATURE"] = maxScaled["MODULE_TEMPERATURE"].fillna(maxScaled["MODULE_TEMPERATURE"].mean())
 print("\n \n")
 
 print(maxScaled)
