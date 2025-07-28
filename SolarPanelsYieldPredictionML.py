@@ -221,12 +221,25 @@ print(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRow
 print("\n \n")
 
 for i in range(3182):
-    dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[i] = dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[3181 + i]
+    dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[i] = dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[3182 + i]
 
 for i in range(1382):
-    dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[i] = dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[3181 + i]
+    dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[i] = dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[3182 + i]
 
 
 print(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap)
 print("\n \n")
 print(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap)
+
+dfWeatherSensorAndGenerationDataFrameMerge.drop(["SOLAR_PANEL_INVERTER_ID", "TOTAL_YIELD"], axis=1, inplace=True)
+dfWeatherSensorAndGenerationDataFrameMerge["SOLAR_PANEL_INVERTER_ID"] = dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap["SOLAR_PANEL_INVERTER_ID"]
+dfWeatherSensorAndGenerationDataFrameMerge["TOTAL_YIELD"] = dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"]
+
+
+print("\n \n")
+
+print(dfWeatherSensorAndGenerationDataFrameMerge)
+
+print("\n \n")
+
+print(dfWeatherSensorAndGenerationDataFrameMerge.info())
