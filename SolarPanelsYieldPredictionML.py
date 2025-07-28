@@ -198,9 +198,9 @@ print(maxScaled.info())
 #Now we create one data frame with with one column for each column that we want to change (in our case two columns, the ones stored in the dfTemporaryDataFrameStoringTheLastTwoColumnsFromMaxScaled variable's data frame)
 #We will modify our dfTemporaryDataFrameStoringTheLastTwoColumnsFromMaxScaled variable with these two columns which are the columns where we are going to makke the change of taking the last 68668 rows and placing them at the beginning 
  
-dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap = maxScaled[["SOLAR_PANEL_INVERTER_ID"]].fillna(0)
+dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap = maxScaled[["SOLAR_PANEL_INVERTER_ID"]].reset_index(drop=True)
 
-dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap = maxScaled[["TOTAL_YIELD"]].fillna(0)
+dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap = maxScaled[["TOTAL_YIELD"]].reset_index(drop=True)
 
 print(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap)
 
@@ -208,17 +208,24 @@ print("\n \n")
 
 print(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap)
 
-for i in range(len(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap["SOLAR_PANEL_INVERTER_ID"])): #We are going to make duplicates unique since we need to preserve dimensions for when we add these modified columns to our merged table 
-    if (dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[[i]] == 0): #We do this by assigning duplicate values to their row's index value 
-        dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.loc[i, "SOLAR_PANEL_INVERTER_ID"] = i
+#The following algorithm which has been commented out is not necessary for this program but it took me so much effort for it to work 
 
-for i in range(len(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"])): #We are going to make duplicates unique since we need to preserve dimensions for when we add these modified columns to our merged table 
-    if (dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[[i]] == 0): #We do this by assigning duplicate values to their row's index value 
-        dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.loc[i, "TOTAL_YIELD"] = i
+#for rowIndex in range(len(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap["SOLAR_PANEL_INVERTER_ID"])): #We are going to make duplicates unique since we need to preserve dimensions for when we add these modified columns to our merged table 
+    #if ((dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[[rowIndex]].any() == 0).any()): #We do this by assigning duplicate values to their row's index value 
+        #dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.loc[rowIndex, "SOLAR_PANEL_INVERTER_ID"] = rowIndex
 
-dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.reindex(index=list(chain.from_iterable([[i for i in range(3181, 71959)] + [j for j in range(0, 3180)]])))
+#for rowIndex in range(len(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"])): #We are going to make duplicates unique since we need to preserve dimensions for when we add these modified columns to our merged table 
+    #if ((dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[[rowIndex]].any() == 0).any()): #We do this by assigning duplicate values to their row's index value 
+        #dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.loc[rowIndex, "TOTAL_YIELD"] = rowIndex
 
-dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.reindex(index=list(chain.from_iterable([[i for i in range(3181, 71959)] + [j for j in range(0, 3180)]])))
+print("\n \n")
+
+for i in range(3182):
+    dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[i] = dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[3181 + i]
+
+for i in range(1382):
+    dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[i] = dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[3181 + i]
+
 
 print(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap)
 print("\n \n")
