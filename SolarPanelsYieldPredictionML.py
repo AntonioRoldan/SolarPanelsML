@@ -2,7 +2,6 @@ import sklearn as sk
 from scipy import stats 
 import pandas as pd 
 import matplotlib.pyplot as plt 
-from itertools import chain
 
 
 from scipy.stats import ttest_1samp #We are going to perform this hypothesis test between each of our x features  (csv columns) and our y label or target variable if our p value exceeds 0.05 
@@ -226,26 +225,38 @@ for i in range(3182):
 for i in range(1382):
     dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[i] = dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[3182 + i]
 
-for i in range(len(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap["SOLAR_PANEL_INVERTER_ID"])):
-    if(i > 3182):
-        dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.loc[i, "SOLAR_PANEL_INVERTER_ID" ]= 0
+#for i in range(len(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap["SOLAR_PANEL_INVERTER_ID"])):
+    #if(i > 3182):
+        #dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.loc[i, "SOLAR_PANEL_INVERTER_ID" ]= 0
 
-for i in range(len(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"])):
-    if(i > 3182):
-        dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.loc[i, "TOTAL_YIELD"] = dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"].mean()
-
+#for i in range(len(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"])):
+    #if(i > 3182):
+        #dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.loc[i, "TOTAL_YIELD"] = dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"].mean()
+dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.fillna(0)
+dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.fiillna(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"].mean())
 print(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap)
 print("\n \n")
 print(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap)
 
 dfWeatherSensorAndGenerationDataFrameMerge.drop(["SOLAR_PANEL_INVERTER_ID", "TOTAL_YIELD"], axis=1, inplace=True)
-dfWeatherSensorAndGenerationDataFrameMerge["SOLAR_PANEL_INVERTER_ID"] = dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap["SOLAR_PANEL_INVERTER_ID"]
-dfWeatherSensorAndGenerationDataFrameMerge["TOTAL_YIELD"] = dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"]
+maxScaled["SOLAR_PANEL_INVERTER_ID"] = dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap["SOLAR_PANEL_INVERTER_ID"]
+maxScaled["TOTAL_YIELD"] = dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"]
+
 
 print("\n \n")
 
-print(dfWeatherSensorAndGenerationDataFrameMerge)
+print(maxScaled)
 
 print("\n \n")
 
-print(dfWeatherSensorAndGenerationDataFrameMerge.info())
+print(maxScaled.info())
+
+maxScaled.drop(maxScaled.tail(65595).index, inplace=True)
+
+print("\n \n")
+
+print(maxScaled)
+
+print("\n \n")
+
+print(maxScaled.info())
