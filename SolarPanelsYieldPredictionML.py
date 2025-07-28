@@ -2,6 +2,7 @@ import sklearn as sk
 from scipy import stats 
 import pandas as pd 
 import matplotlib.pyplot as plt 
+from sklearn.model_selection import train_test_split
 
 
 from scipy.stats import ttest_1samp #We are going to perform this hypothesis test between each of our x features  (csv columns) and our y label or target variable if our p value exceeds 0.05 
@@ -173,8 +174,11 @@ dfWeatherSensorAndGenerationDataFrameMerge["DATE_TIME"] = pd.to_datetime(dfWeath
 
 print(dfWeatherSensorAndGenerationDataFrameMerge.isnull().sum())
 
-#There is an issue. Because our merged tables differ in row count with one having 3182 values and the other having 68779 values what happens is pandas adds extra null values to each table and extra rows from the second merged table to the first merged table thus increasing the row count of the table resulting from our merging.
-#First we are going to normalize the nummerical data of our columns next we will pair up matching records without nulls in our table 
+#There is an issue. Because our merged tables differ in row count with one having 3182 values and the other having 68779 values what happens is pandas adds extra null values to each table contained in extra rows from the second merged table to the first merged table thus increasing the row count of the table resulting from our merging.
+#First we are going to normalize the nummerical data of our columns next we will pair up matching records without nulls in our table.
+#Basically we are going to reduce our entries down to 3182 but BEFORE THAT we will place the first 3182 values after the index 3182 from our 70000 entry columns (TOTAL_YIELD AND SOLAR_PANEL_INVERTED_ID which have 70000 entries because they come from the second table having 68.0000 and we are adding the extra rows with null values) 
+#Then we impute null values to the mean or zero depending on whether our values are numeric or not. How are we going to do this? 
+#That we will show once we have normalized our numeric columns' data 
 
 #Now we are going to normalize the numerical data of each column
 
@@ -189,17 +193,12 @@ print(maxScaled)
 
 print(maxScaled.info())
 
-#Now we are going to remove extra rows and take the last 68779 non null values from our second merged table columns and place them at the start of each column individually. For that we will create a temporary data frame storing the two columns from our second table.
-#Then we will make our change of taking the last 68779 rows from these two columns and placing them at the beginning of each column SEPARATELY that is we will make the change on one column then on the other.
-#Finally we will drop the two last columns from our merged table (the max scaled variable) and add our two new columns from the temporary data frame as the final two columns of our merged table (the max scaled variable). Note we must go from having seventy thousand something rows to just three thousand due to this 
-#Each one of these steps will take smaller steps that will be described in the comments
 
-#Now we create one data frame with with one column for each column that we want to change (in our case two columns, the ones stored in the dfTemporaryDataFrameStoringTheLastTwoColumnsFromMaxScaled variable's data frame)
-#We will modify our dfTemporaryDataFrameStoringTheLastTwoColumnsFromMaxScaled variable with these two columns which are the columns where we are going to makke the change of taking the last 68668 rows and placing them at the beginning 
+#Now we are going to create two isolated data frames one for each of the two columns containing 70000 values in our maxScaled data frame which are as we have said the ones belonging to the 680000 rows table after adding extra null value 
  
 dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap = maxScaled[["SOLAR_PANEL_INVERTER_ID"]].reset_index(drop=True)
 
-dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap = maxScaled[["TOTAL_YIELD"]].reset_index(drop=True)
+dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap = maxScaled[["TOTAL_YIELD"]].reset_index(drop=True) #We add reset index to avoid the duplicate row label bug from the pandas library
 
 print(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap)
 
@@ -219,26 +218,23 @@ print(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRow
 
 print("\n \n")
 
+#Now we set the first 3182 rows to the first 3182 rows after index 3182 
+
 for i in range(3182):
     dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[i] = dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[3182 + i]
 
 for i in range(1382):
     dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[i] = dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[3182 + i]
 
-#for i in range(len(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap["SOLAR_PANEL_INVERTER_ID"])):
-    #if(i > 3182):
-        #dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.loc[i, "SOLAR_PANEL_INVERTER_ID" ]= 0
-
-#for i in range(len(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"])):
-    #if(i > 3182):
-        #dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.loc[i, "TOTAL_YIELD"] = dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"].mean()
+#Now we impute the null values from our isolated data frames 
 dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap = dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.fillna(0)
 dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap = dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.fillna(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"].mean())
 print(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap)
 print("\n \n")
 print(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap)
 
-dfWeatherSensorAndGenerationDataFrameMerge.drop(["SOLAR_PANEL_INVERTER_ID", "TOTAL_YIELD"], axis=1, inplace=True)
+
+#Now we replace the columns with 70000 values from the maxScaledTable with the values we have assigned to our isolated dataframes (dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap and dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap) that we have modified in our previous loops and whose null values we have imputed with column's mean values or zero values
 maxScaled["SOLAR_PANEL_INVERTER_ID"] = dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap["SOLAR_PANEL_INVERTER_ID"]
 maxScaled["TOTAL_YIELD"] = dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"]
 
@@ -264,3 +260,4 @@ print(maxScaled)
 print("\n \n")
 
 print(maxScaled.info())
+
