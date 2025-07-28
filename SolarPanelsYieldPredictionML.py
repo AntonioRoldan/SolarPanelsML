@@ -2,7 +2,7 @@ import sklearn as sk
 from scipy import stats 
 import pandas as pd 
 import matplotlib.pyplot as plt 
-
+from itertools import chain
 
 
 from scipy.stats import ttest_1samp #We are going to perform this hypothesis test between each of our x features  (csv columns) and our y label or target variable if our p value exceeds 0.05 
@@ -47,12 +47,15 @@ print(dfGenerationData.isnull().sum()) #We start by counting the total amount of
 
 print("\n \n")
 
+dfGenerationData = dfGenerationData.dropna()
+
 print(dfGenerationData.info()) #We show the column types and names and see if there are missing values this way too by checking non null values.
 
 print("\n \n")
 
 print(dfWeatherSensorData.isnull().sum())
 
+dfWeatherSensorData = dfWeatherSensorData.dropna()
 print("\n \n")
 
 print(dfWeatherSensorData.info())
@@ -91,6 +94,8 @@ print("CLEANING OUTLIERS")
 print("\n \n")
 
 dfGenerationData = dfGenerationData[(stats.zscore(dfGenerationData[["TOTAL_YIELD"]]) < 3)] #We apply zscore to filter out outliers by checking if the standard deviations for our columns' values lie under 3 
+
+print(dfGenerationData)
 
 print(dfGenerationData.info())
 
@@ -166,16 +171,55 @@ print(dfWeatherSensorAndGenerationDataFrameMerge.info())
 
 dfWeatherSensorAndGenerationDataFrameMerge["DATE_TIME"] = pd.to_datetime(dfWeatherSensorAndGenerationDataFrameMerge["DATE_TIME"])
 
+
+print(dfWeatherSensorAndGenerationDataFrameMerge.isnull().sum())
+
+#There is an issue. Because our merged tables differ in row count with one having 3182 values and the other having 68779 values what happens is pandas adds extra null values to each table and extra rows from the second merged table to the first merged table thus increasing the row count of the table resulting from our merging.
+#First we are going to normalize the nummerical data of our columns next we will pair up matching records without nulls in our table 
+
 #Now we are going to normalize the numerical data of each column
 
 #We are going to use the maximum absolute scaling normalization technique 
 
-max_scaled = dfWeatherSensorAndGenerationDataFrameMerge.copy()
+maxScaled = dfWeatherSensorAndGenerationDataFrameMerge.copy()
 
-for column in max_scaled[["AMBIENT_TEMPERATURE", "MODULE_TEMPERATURE", "TOTAL_YIELD"]]:
-    max_scaled[column] = max_scaled[column] / max_scaled[column].abs().max()
+for column in maxScaled[["AMBIENT_TEMPERATURE", "MODULE_TEMPERATURE", "TOTAL_YIELD"]].columns:
+    maxScaled[column] = maxScaled[column] / maxScaled[column].abs().max()
 
-print(max_scaled.info())
+print(maxScaled)
 
-max_scaled.plot(kind='bar')
-plt.show()
+print(maxScaled.info())
+
+#Now we are going to remove extra rows and take the last 68779 non null values from our second merged table columns and place them at the start of each column individually. For that we will create a temporary data frame storing the two columns from our second table.
+#Then we will make our change of taking the last 68779 rows from these two columns and placing them at the beginning of each column SEPARATELY that is we will make the change on one column then on the other.
+#Finally we will drop the two last columns from our merged table (the max scaled variable) and add our two new columns from the temporary data frame as the final two columns of our merged table (the max scaled variable). Note we must go from having seventy thousand something rows to just three thousand due to this 
+#Each one of these steps will take smaller steps that will be described in the comments
+
+#Now we create one data frame with with one column for each column that we want to change (in our case two columns, the ones stored in the dfTemporaryDataFrameStoringTheLastTwoColumnsFromMaxScaled variable's data frame)
+#We will modify our dfTemporaryDataFrameStoringTheLastTwoColumnsFromMaxScaled variable with these two columns which are the columns where we are going to makke the change of taking the last 68668 rows and placing them at the beginning 
+ 
+dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap = maxScaled[["SOLAR_PANEL_INVERTER_ID"]].fillna(0)
+
+dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap = maxScaled[["TOTAL_YIELD"]].fillna(0)
+
+print(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap)
+
+print("\n \n")
+
+print(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap)
+
+for i in range(len(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap["SOLAR_PANEL_INVERTER_ID"])): #We are going to make duplicates unique since we need to preserve dimensions for when we add these modified columns to our merged table 
+    if (dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc([i]) == 0): #We do this by assigning duplicate values to their row's index value 
+        dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.loc([i, "SOLAR_PANEL_INVERTER_ID"]) = i
+
+for i in range(len(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"])): #We are going to make duplicates unique since we need to preserve dimensions for when we add these modified columns to our merged table 
+    if (dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc([i]) == 0): #We do this by assigning duplicate values to their row's index value 
+        dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.loc([i, "TOTAL_YIELD"]) = i
+
+dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.reindex(index=list(chain.from_iterable([[i for i in range(3181, 71959)] + [j for j in range(0, 3180)]])))
+
+dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap.reindex(index=list(chain.from_iterable([[i for i in range(3181, 71959)] + [j for j in range(0, 3180)]])))
+
+print(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap)
+print("\n \n")
+print(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap)
