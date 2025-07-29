@@ -1,8 +1,10 @@
 import sklearn as sk 
 from scipy import stats 
 import pandas as pd 
-import matplotlib.pyplot as plt 
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error as MSE
+import numpy as np 
+from xgboost import xg
 
 
 from scipy.stats import ttest_1samp #We are going to perform this hypothesis test between each of our x features  (csv columns) and our y label or target variable if our p value exceeds 0.05 
@@ -261,3 +263,21 @@ print("\n \n")
 
 print(maxScaled.info())
 
+X, y = maxScaled.drop('TOTAL_YIELD', axis=1), maxScaled[['TOTAL_YIELD']]
+# Splitting
+train_X, test_X, train_y, test_y = train_test_split(X, y,
+                      test_size = 0.3, random_state = 123)
+
+# Instantiation
+xgb = xg.XGBRegressor(objective ='reg:linear',
+                  n_estimators = 10, seed = 123)
+
+# Fitting the model
+xgb.fit(train_X, train_y)
+
+# Predict the model
+pred = xgb.predict(test_X)
+
+# RMSE Computation
+rmse = np.sqrt(MSE(test_y, pred))
+print("RMSE{0}".format(rmse))
