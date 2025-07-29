@@ -280,7 +280,7 @@ train_X, test_X, train_y, test_y = train_test_split(X, y,
 
 
 # Instantiation
-xgb = xg.XGBRegressor(objective ='reg:linear',
+xgb = xg.XGBRegressor(objective ='reg:squarederror',
                   n_estimators = 10, seed = 123)
 
 # Fitting the model
