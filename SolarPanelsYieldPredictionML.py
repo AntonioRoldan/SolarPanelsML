@@ -261,6 +261,10 @@ print(maxScaled)
 print("\n \n")
 
 print(maxScaled.info())
+#Next three lines are necessary to fix this error "ValueError: DataFrame.dtypes for data must be int, float, bool or category. When categorical type is supplied, the experimental DMatrix parameter`enable_categorical` must be set to `True`.  Invalid columns:DATE_TIME: object, SENSOR_INVERTER_ID: object, SOLAR_PANEL_INVERTER_ID: object"
+maxScaled["DATE_TIME"].dt.strftime("%Y%m%d").astype(int)
+maxScaled["SENSOR_INVERTER_ID"].astype("category")
+maxScaled["SOLAR_PANEL_INVERTER_ID"].astype("category")
 
 X, y = maxScaled.drop('TOTAL_YIELD', axis=1), maxScaled[['TOTAL_YIELD']]
 # Splitting
