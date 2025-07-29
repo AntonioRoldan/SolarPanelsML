@@ -174,36 +174,41 @@ dfWeatherSensorAndGenerationDataFrameMerge = pd.concat([dfWeatherSensorData, dfG
 
 print(dfWeatherSensorAndGenerationDataFrameMerge.info())
 
-dfWeatherSensorAndGenerationDataFrameMerge["DATE_TIME"] = pd.to_datetime(dfWeatherSensorAndGenerationDataFrameMerge["DATE_TIME"])
+dfWeatherSensorAndGenerationDataFrameMerge["DATE_TIME"] = pd.to_datetime(dfWeatherSensorAndGenerationDataFrameMerge["DATE_TIME"]) #We have to cast the date time to the date time type again because we have merged the date time value from the second table not the first which we casted before 
 
 
 print(dfWeatherSensorAndGenerationDataFrameMerge.isnull().sum())
 
-#There is an issue. Because our merged tables differ in row count with one having 3182 values and the other having 68779 values what happens is pandas adds extra null values to each table contained in extra rows from the second merged table to the first merged table thus increasing the row count of the table resulting from our merging.
-#First we are going to normalize the nummerical data of our columns next we will pair up matching records without nulls in our table.
-#Basically we are going to reduce our entries down to 3182 but BEFORE THAT we will place the first 3182 values after the index 3182 from our 70000 entry columns (TOTAL_YIELD AND SOLAR_PANEL_INVERTED_ID which have 70000 entries because they come from the second table having 68.0000 and we are adding the extra rows with null values) 
-#Then we impute null values to the mean or zero depending on whether our values are numeric or not. How are we going to do this? 
+#There is an issue. Because our merged tables differ in row count with one having 3182 values and the other having 68779 values what happens is pandas adds extra null values to each table contained in extra rows from the second merged table to the first merged table and vice versa thus increasing the row count of the table resulting from our merging.
+#and making sure all columns have the same row number. This increases the row count to 71000. So how do we arrange the data now? We need to solve this problem 
+#First we are going to normalize the numerical data of our columns next we will pair up matching records without nulls in our table. (We need to pair them up because the first table's columns in our merged table, which by the way are the last two columns, add an equal row amount to the amount of second table's rows filling them with null values and the columns belonging to the second table do the same but adding the first table's row amount)
+#The issue lies with the fact that we have null values in the same rows that we need to train which are 3182 (they are 3182 because our two tables don't have the same number of rows and we must take the smaller one) because the extra null valued rows of equal amount to the second merged table's rows within our merged table have been added at the BEGINNING of the first table columns in our merged table. AND the extra null valued rows added to the first merged table's rows of equal amount to the second merged table's rows have been added AT THE END
+#So the 3182 rows that we need for our model contain two entire null columns one of which is our target variable.
+#Basically we are going to reduce our entries down to 3182 but BEFORE THAT we will place the first 3182 row values after row index 3182 from our 68000 entry columns to the FIRST 3182 rows to replace their current null values (these columns are TOTAL_YIELD AND SOLAR_PANEL_INVERTED_ID which have 70000 entries because they come from the second table having 68.0000 and we are adding the extra rows with null values) 
+#Then we impute remaining null values to the mean or zero depending on whether our values are numeric or not. How are we going to do this? 
 #That we will show once we have normalized our numeric columns' data 
+#So first we normalize data, next we  we place the first 3182 row values after row index 3182 from our 68000 entry columns to the FIRST 3182 rows to replace their current null values and then we reduce our entries down to 3182 in the merged table.
+#To perform the last two steps we are going to need to create copies of the first merged table's columns in our merged table and store them in variables. One variable for each column which will be its own dataframe. We make the modifications to these data frames or isolated columns and store them back in the merged table overwriting the previous columns that we have copied with their copies we have modified. 
 
 #Now we are going to normalize the numerical data of each column
 
 #We are going to use the maximum absolute scaling normalization technique 
 
-maxScaled = dfWeatherSensorAndGenerationDataFrameMerge.copy()
+dfMaxScaled = dfWeatherSensorAndGenerationDataFrameMerge.copy()
 
-for column in maxScaled[["AMBIENT_TEMPERATURE", "MODULE_TEMPERATURE", "TOTAL_YIELD"]].columns:
-    maxScaled[column] = maxScaled[column] / maxScaled[column].abs().max()
+for column in dfMaxScaled[["AMBIENT_TEMPERATURE", "MODULE_TEMPERATURE", "TOTAL_YIELD"]].columns:
+    dfMaxScaled[column] = dfMaxScaled[column] / dfMaxScaled[column].abs().max()
 
-print(maxScaled)
+print(dfMaxScaled)
 
-print(maxScaled.info())
+print(dfMaxScaled.info())
 
 
-#Now we are going to create two isolated data frames one for each of the two columns containing 70000 values in our maxScaled data frame which are as we have said the ones belonging to the 680000 rows table after adding extra null value 
+#Now we are going to create two isolated data frames one for each of the two columns from the table second table, which is the one containing 68000 values instead of the one contaiining 3182 in our maxScaled data frame which are as we have said the ones belonging to the 680000 rows table after adding extra null value 
  
-dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap = maxScaled[["SOLAR_PANEL_INVERTER_ID"]].reset_index(drop=True)
+dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap = dfMaxScaled[["SOLAR_PANEL_INVERTER_ID"]].reset_index(drop=True)
 
-dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap = maxScaled[["TOTAL_YIELD"]].reset_index(drop=True) #We add reset index to avoid the duplicate row label bug from the pandas library
+dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap = dfMaxScaled[["TOTAL_YIELD"]].reset_index(drop=True) #We add reset index to avoid the duplicate row label bug from the pandas library
 
 print(dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap)
 
@@ -223,7 +228,7 @@ print(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRow
 
 print("\n \n")
 
-#Now we set the first 3182 rows to the first 3182 rows after index 3182 
+#Now we set the first 3182 rows of these columns to the first 3182 rows' values after index 3182 thus replacing their null values
 
 for i in range(3182):
     dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[i] = dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap.iloc[3182 + i]
@@ -240,39 +245,42 @@ print(dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRow
 
 
 #Now we replace the columns with 70000 values from the maxScaledTable with the values we have assigned to our isolated dataframes (dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap and dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap) that we have modified in our previous loops and whose null values we have imputed with column's mean values or zero values
-maxScaled["SOLAR_PANEL_INVERTER_ID"] = dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap["SOLAR_PANEL_INVERTER_ID"]
-maxScaled["TOTAL_YIELD"] = dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"]
+dfMaxScaled["SOLAR_PANEL_INVERTER_ID"] = dfTemporaryDataFrameStoringPanelInverterIdColumnToMakeTheLastNRowsWithFirstRowsSwap["SOLAR_PANEL_INVERTER_ID"]
+dfMaxScaled["TOTAL_YIELD"] = dfTemmporaryDataFrameStoringTotalYieldColumnToMakeTheLastNRowsWithFirstRowsSwap["TOTAL_YIELD"]
 
 
 print("\n \n")
 
-print(maxScaled)
+print(dfMaxScaled)
 
 print("\n \n")
 
-print(maxScaled.info())
-
-maxScaled.drop(maxScaled.tail(65595).index, inplace=True)
-maxScaled["DATE_TIME"] = maxScaled["DATE_TIME"].fillna(0)
-maxScaled["PLANT_ID"] = maxScaled["PLANT_ID"].fillna(0)
-maxScaled["SENSOR_INVERTER_ID"] = maxScaled["SENSOR_INVERTER_ID"].fillna(0)
-maxScaled["AMBIENT_TEMPERATURE"] = maxScaled["AMBIENT_TEMPERATURE"].fillna(maxScaled["AMBIENT_TEMPERATURE"].mean())
-maxScaled["MODULE_TEMPERATURE"] = maxScaled["MODULE_TEMPERATURE"].fillna(maxScaled["MODULE_TEMPERATURE"].mean())
+print(dfMaxScaled.info())
+#We are going to get rid of 65595 rows so we will have our remaining 3182 rows. Remember we do this becuase of our row count mismatch between the two original tables that we have merged and whose merge we have just normalized and stored in the dfmaxScaled pandas data frame.
+dfMaxScaled.drop(dfMaxScaled.tail(65595).index, inplace=True) 
+#Next we impute the remaining null values there are some null values still because we cannot trim the table precisely and get rid of all null values.
+dfMaxScaled["DATE_TIME"] = dfMaxScaled["DATE_TIME"].fillna(0)
+dfMaxScaled["PLANT_ID"] = dfMaxScaled["PLANT_ID"].fillna(0)
+dfMaxScaled["SENSOR_INVERTER_ID"] = dfMaxScaled["SENSOR_INVERTER_ID"].fillna(0)
+dfMaxScaled["AMBIENT_TEMPERATURE"] = dfMaxScaled["AMBIENT_TEMPERATURE"].fillna(dfMaxScaled["AMBIENT_TEMPERATURE"].mean())
+dfMaxScaled["MODULE_TEMPERATURE"] = dfMaxScaled["MODULE_TEMPERATURE"].fillna(dfMaxScaled["MODULE_TEMPERATURE"].mean())
 print("\n \n")
 
-print(maxScaled)
+print(dfMaxScaled)
 
 print("\n \n")
 
-print(maxScaled.info())
+print(dfMaxScaled.info())
 #Next three lines are necessary to fix this error "ValueError: DataFrame.dtypes for data must be int, float, bool or category. When categorical type is supplied, the experimental DMatrix parameter`enable_categorical` must be set to `True`.  Invalid columns:DATE_TIME: object, SENSOR_INVERTER_ID: object, SOLAR_PANEL_INVERTER_ID: object"
-maxScaled["DATE_TIME"] = pd.to_datetime(pd.Series(maxScaled["DATE_TIME"])).astype(int) / 10 * 9 #We turn date into seconds integer 
-maxScaled["SENSOR_INVERTER_ID"] = maxScaled["SENSOR_INVERTER_ID"].astype("category")
-maxScaled["SOLAR_PANEL_INVERTER_ID"] = maxScaled["SOLAR_PANEL_INVERTER_ID"].astype("category")
-#Now we are going to use the label encoder function to make sure there are no more than one data type per column
+dfMaxScaled["DATE_TIME"] = pd.to_datetime(pd.Series(dfMaxScaled["DATE_TIME"])).astype(int) / 10 * 9 #We turn date into seconds integer 
+dfMaxScaled["SENSOR_INVERTER_ID"] = dfMaxScaled["SENSOR_INVERTER_ID"].astype("category")
+dfMaxScaled["SOLAR_PANEL_INVERTER_ID"] = dfMaxScaled["SOLAR_PANEL_INVERTER_ID"].astype("category")
+#Now we are going to use the label encoder function to make sure there are no more than one data type per column which would give us an error 
 label_encoder = preprocessing.LabelEncoder()
-maxScaled = maxScaled.astype(str).apply(label_encoder.fit_transform)
-X, y = maxScaled.drop('TOTAL_YIELD', axis=1), maxScaled[['TOTAL_YIELD']] #We set X and y
+dfMaxScaled = dfMaxScaled.astype(str).apply(label_encoder.fit_transform)
+#Finally we are going to prepare the data for our model without cross validation and next with cross validation 
+
+X, y = dfMaxScaled.drop('TOTAL_YIELD', axis=1), dfMaxScaled[['TOTAL_YIELD']] #We set X and y
 
 # Splitting
 train_X, test_X, train_y, test_y = train_test_split(X, y,
@@ -295,7 +303,7 @@ print("XGBOOST WITHOUT CROSS VALIDATION")
 print("RMSE{0}".format(rmse))
 print("We are going to check how many distinct values there are in our y column and compare it to our RMSE value the larger the difference between both with the RMSE being smaller the better the model's accuracy")
 print("\n \n")
-print("Distinct values in y column: {0}     RMSE value: {1}".format(maxScaled["TOTAL_YIELD"].nunique(), rmse))
+print("Distinct values in y column: {0}     RMSE value: {1}".format(dfMaxScaled["TOTAL_YIELD"].nunique(), rmse))
 
 #Now we run xgboost with cross validation
 
