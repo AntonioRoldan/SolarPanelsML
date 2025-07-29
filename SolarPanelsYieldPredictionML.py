@@ -1,7 +1,7 @@
 import sklearn as sk 
 from scipy import stats 
 import pandas as pd 
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold, cross_val_score
 from sklearn.metrics import mean_squared_error as MSE
 from sklearn import preprocessing
 
@@ -269,10 +269,10 @@ print(maxScaled.info())
 maxScaled["DATE_TIME"] = pd.to_datetime(pd.Series(maxScaled["DATE_TIME"])).astype(int) / 10 * 9 #We turn date into seconds integer 
 maxScaled["SENSOR_INVERTER_ID"] = maxScaled["SENSOR_INVERTER_ID"].astype("category")
 maxScaled["SOLAR_PANEL_INVERTER_ID"] = maxScaled["SOLAR_PANEL_INVERTER_ID"].astype("category")
+#Now we are going to use the label encoder function to make sure there are no more than one data type per column
 label_encoder = preprocessing.LabelEncoder()
 maxScaled = maxScaled.astype(str).apply(label_encoder.fit_transform)
-X, y = maxScaled.drop('TOTAL_YIELD', axis=1), maxScaled[['TOTAL_YIELD']]
-
+X, y = maxScaled.drop('TOTAL_YIELD', axis=1), maxScaled[['TOTAL_YIELD']] #We set X and y
 
 # Splitting
 train_X, test_X, train_y, test_y = train_test_split(X, y,
@@ -282,7 +282,6 @@ train_X, test_X, train_y, test_y = train_test_split(X, y,
 # Instantiation
 xgb = xg.XGBRegressor(objective ='reg:squarederror',
                   n_estimators = 10, seed = 123)
-
 # Fitting the model
 xgb.fit(train_X, train_y)
 
@@ -291,7 +290,25 @@ pred = xgb.predict(test_X)
 
 # RMSE Computation
 rmse = np.sqrt(MSE(test_y, pred))
+
+print("XGBOOST WITHOUT CROSS VALIDATION")
 print("RMSE{0}".format(rmse))
 print("We are going to check how many distinct values there are in our y column and compare it to our RMSE value the larger the difference between both with the RMSE being smaller the better the model's accuracy")
 print("\n \n")
 print("Distinct values in y column: {0}     RMSE value: {1}".format(maxScaled["TOTAL_YIELD"].nunique(), rmse))
+
+#Now we run xgboost with cross validation
+
+print("\n \n")
+
+print("XGBOOST WITH CROSS VALIDATION")
+
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
+
+cv_scores = cross_val_score(xgb, X, y, cv=kf, scoring='r2')
+
+print("Cross-validation scores:", cv_scores)
+print(f"Mean cross-validation score: {np.mean(cv_scores):.2f} +/- {np.std(cv_scores):.2f}")
+
+
+
