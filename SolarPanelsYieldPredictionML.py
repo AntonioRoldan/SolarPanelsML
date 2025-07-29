@@ -292,3 +292,6 @@ pred = xgb.predict(test_X)
 # RMSE Computation
 rmse = np.sqrt(MSE(test_y, pred))
 print("RMSE{0}".format(rmse))
+print("We are going to check how many distinct values there are in our y column and compare it to our RMSE value the larger the difference between both with the RMSE being smaller the better the model's accuracy")
+print("\n \n")
+print("Distinct values in y column: {0}     RMSE value: {1}".format(maxScaled["TOTAL_YIELD"].nunique(), rmse))
