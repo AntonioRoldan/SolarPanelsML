@@ -4,8 +4,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error as MSE
 import numpy as np 
-from xgboost import xg
-
+import xgboost as xg
 
 from scipy.stats import ttest_1samp #We are going to perform this hypothesis test between each of our x features  (csv columns) and our y label or target variable if our p value exceeds 0.05 
 
