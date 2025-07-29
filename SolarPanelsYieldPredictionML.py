@@ -305,7 +305,7 @@ print("XGBOOST WITH CROSS VALIDATION")
 
 kf = KFold(n_splits=5, shuffle=True, random_state=42)
 
-cv_scores = cross_val_score(xgb, X, y, cv=kf, scoring='r2')
+cv_scores = cross_val_score(xgb, X, y, cv=kf, scoring='r2') #Remember to set r2 for the scoring parameter when building a regression model which is obviously our case.
 
 print("Cross-validation scores:", cv_scores)
 print(f"Mean cross-validation score: {np.mean(cv_scores):.2f} +/- {np.std(cv_scores):.2f}")
