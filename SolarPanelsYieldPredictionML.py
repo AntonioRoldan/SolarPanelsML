@@ -3,6 +3,10 @@ from scipy import stats
 import pandas as pd 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error as MSE
+from sklearn import preprocessing
+
+# label_encoder object knows how to understand word labels.
+
 import numpy as np 
 import xgboost as xg
 
@@ -265,11 +269,15 @@ print(maxScaled.info())
 maxScaled["DATE_TIME"] = pd.to_datetime(pd.Series(maxScaled["DATE_TIME"])).astype(int) / 10 * 9 #We turn date into seconds integer 
 maxScaled["SENSOR_INVERTER_ID"] = maxScaled["SENSOR_INVERTER_ID"].astype("category")
 maxScaled["SOLAR_PANEL_INVERTER_ID"] = maxScaled["SOLAR_PANEL_INVERTER_ID"].astype("category")
-
+label_encoder = preprocessing.LabelEncoder()
+maxScaled = maxScaled.astype(str).apply(label_encoder.fit_transform)
 X, y = maxScaled.drop('TOTAL_YIELD', axis=1), maxScaled[['TOTAL_YIELD']]
+
+
 # Splitting
 train_X, test_X, train_y, test_y = train_test_split(X, y,
                       test_size = 0.3, random_state = 123)
+
 
 # Instantiation
 xgb = xg.XGBRegressor(objective ='reg:linear',
